@@ -1,5 +1,4 @@
 const path = require('path');
-const autoprefixer = require('autoprefixer');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 const ExtensionReloader = require('webpack-extension-reloader');
@@ -27,7 +26,9 @@ const getLessLoaders = (useModules) => {
     {
       loader: 'postcss-loader',
       options: {
-        plugins: () => [autoprefixer],
+        postcssOptions: {
+          plugins: ['autoprefixer'],
+        },
       },
     },
     {
@@ -90,11 +91,13 @@ module.exports = {
     new ExtensionReloader({
       reloadPage: true,
     }),
-    new CopyWebpackPlugin([
-      { from: './src/manifest.json' },
-      { from: './src/icons', to: 'icons' },
-      { from: './src/pages/starList.html' },
-    ]),
+    new CopyWebpackPlugin({
+      patterns: [
+        { from: './src/manifest.json' },
+        { from: './src/icons', to: 'icons' },
+        { from: './src/pages/starList.html' },
+      ],
+    }),
   ]),
 
   devtool: ifDevelopment('inline-source-map'),
