@@ -1,5 +1,5 @@
 import $ from 'jquery';
-import { onHistoryStateUpdated } from '@/utils/navigation';
+import { throttle } from 'lodash';
 import { createStarService } from './star';
 
 const { getStar, addStar, removeStar } = createStarService(window.location.origin);
@@ -67,42 +67,20 @@ function toggleStar() {
   }
 }
 
-function handleUrlChange() {
-  let isCheckPageRunning = false;
-  let continueExistingCount = 0;
-
-  onHistoryStateUpdated.addListener(() => {
-    continueExistingCount = 0;
-    checkPage();
-  });
-
-  const checkPage = () => {
-    if (isCheckPageRunning) {
-      // ensure only one timer
-      return;
+function monitorPageChange() {
+  const handler = throttle(() => {
+    if (starButton == null || !starButton[0].isConnected) {
+      initStarButton();
     }
-    isCheckPageRunning = true;
-    setTimeout(() => {
-      isCheckPageRunning = false;
-      const existing = $(toolsQeury).find('.jira-star').length > 0;
-      if (!existing) {
-        initStarButton();
-        continueExistingCount = 0;
-      } else {
-        continueExistingCount++;
-      }
-      if (continueExistingCount < 100) {
-        // continue monitoring the page for 10 seconds
-        checkPage();
-      }
-    }, 100);
-  };
+  }, 200);
+  const observer = new MutationObserver(handler);
+  observer.observe(document.body, { subtree: true, childList: true });
 }
 
 function init() {
   initStarButton();
-  // on URL changed via AJAX, ensure star button is still inserted
-  handleUrlChange();
+  // after page content changed, ensure star button is still inserted
+  monitorPageChange();
 }
 
 function isJira() {
