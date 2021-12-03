@@ -69,6 +69,8 @@ class IssueList extends React.Component {
             </div>
           );
         },
+        sorter: (a, b) => a.time - b.time,
+        defaultSortOrder: 'descend',
       },
       {
         title: 'Issue Key',
@@ -90,6 +92,15 @@ class IssueList extends React.Component {
       {
         title: 'Status',
         dataIndex: 'status',
+        sorter: (a, b) => {
+          if (a.status < b.status) {
+            return -1;
+          }
+          if (a.status > b.status) {
+            return 1;
+          }
+          return 0;
+        },
       },
       {
         title: 'Updated Time',
@@ -101,22 +112,17 @@ class IssueList extends React.Component {
             </div>
           );
         },
+        sorter: (a, b) => {
+          const getTime = (x) => new Date(x).getTime();
+          return getTime(a.updated) - getTime(b.updated);
+        },
+        sortDirections: ['descend', 'ascend'],
       },
     ];
 
-    const dataSource = issues.sort((a, b) => {
-      if (a.time - b.time > 0) {
-        return -1;
-      } else if (a.time - b.time < 0) {
-        return 1;
-      } else {
-        return 0;
-      }
-    });
-
     return (
       <div>
-        <Table size="small" columns={columns} dataSource={dataSource} pagination={false} />
+        <Table size="small" columns={columns} dataSource={issues} pagination={false} />
       </div>
     );
   }
