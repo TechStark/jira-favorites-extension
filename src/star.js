@@ -45,10 +45,11 @@ function getSiteKey(siteURL, needSave) {
   });
 }
 
-// eslint-disable-next-line import/prefer-default-export
 export function createStarService(siteURL) {
+  const formatIssueKey = (siteKey, issueKey) => `s${siteKey}.${issueKey}`;
+
   const getStoreKey = (issueKey, needSave) =>
-    getSiteKey(siteURL, needSave).then((siteKey) => `s${siteKey}.${issueKey}`);
+    getSiteKey(siteURL, needSave).then((siteKey) => formatIssueKey(siteKey, issueKey));
 
   const getStar = (issueKey) =>
     getStoreKey(issueKey).then((key) => readContent(key).then((item) => item[key]));
@@ -60,9 +61,21 @@ export function createStarService(siteURL) {
       writeContent({ [key]: favorite }).then(() => favorite)
     );
 
+  const bulkSave = async (issues) => {
+    const data = {};
+    const siteKey = await getSiteKey(siteURL, true);
+    issues.forEach((issue) => {
+      const key = formatIssueKey(siteKey, issue.key);
+      data[key] = issue;
+    });
+    await writeContent(data);
+    return issues;
+  };
+
   return {
     getStar,
     removeStar,
     addStar,
+    bulkSave,
   };
 }

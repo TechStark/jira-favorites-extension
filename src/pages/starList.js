@@ -1,6 +1,10 @@
 import React from 'react';
+import * as R from 'ramda';
 import { render } from 'react-dom';
+import { Button, Tooltip } from 'antd';
+import { SyncOutlined } from '@ant-design/icons';
 import IssueList from '@/components/IssueList';
+import { createStarService } from '@/star';
 
 class StarList extends React.Component {
   constructor(props) {
@@ -8,6 +12,7 @@ class StarList extends React.Component {
     this.state = {
       sites: [],
       siteIssues: {},
+      isUpdating: false,
     };
   }
 
@@ -28,8 +33,50 @@ class StarList extends React.Component {
     });
   }
 
+  updateIssues(siteURL, issues) {
+    const starService = createStarService(siteURL);
+    this.setState({ isUpdating: true });
+    const promises = issues.map((issue) => {
+      const { key } = issue;
+      return fetch(`${siteURL}/rest/api/2/issue/${key}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+        .then((response) => response.json())
+        .then((item) => {
+          const { fields } = item;
+          const { summary, status, updated } = fields;
+          const { name: statusName } = status;
+          const newIssue = {
+            title: summary,
+            status: statusName,
+            updated,
+          };
+          return R.mergeRight(issue, newIssue);
+        });
+    });
+    Promise.all(promises)
+      .then((issues) => {
+        // console.log(issues);
+        return starService.bulkSave(issues);
+      })
+      .then((issues) => {
+        this.setState({
+          siteIssues: R.assoc(siteURL, issues, this.state.siteIssues),
+        });
+      })
+      .catch((error) => {
+        console.error(error);
+      })
+      .finally(() => {
+        this.setState({ isUpdating: false });
+      });
+  }
+
   render() {
-    const { sites, siteIssues } = this.state;
+    const { sites, siteIssues, isUpdating } = this.state;
 
     return (
       <div>
@@ -37,7 +84,19 @@ class StarList extends React.Component {
         {sites.length === 0 && <div>No Favorite Items</div>}
         {sites.map((siteURL) => (
           <div key={siteURL}>
-            <h3>{siteURL}</h3>
+            <div style={{ display: 'flex', marginTop: '2em' }}>
+              <h3>{siteURL}</h3>
+              <Tooltip title="Update from Jira">
+                <Button
+                  shape="circle"
+                  size="small"
+                  icon={<SyncOutlined />}
+                  style={{ marginLeft: '1em' }}
+                  onClick={() => this.updateIssues(siteURL, siteIssues[siteURL])}
+                  loading={isUpdating}
+                />
+              </Tooltip>
+            </div>
             <IssueList site={siteURL} issues={siteIssues[siteURL]} />
           </div>
         ))}

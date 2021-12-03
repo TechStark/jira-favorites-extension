@@ -1,6 +1,6 @@
 import React from 'react';
 import { Table } from 'antd';
-import { ClockCircleOutlined, StarOutlined, StarFilled } from '@ant-design/icons';
+import { StarOutlined, StarFilled } from '@ant-design/icons';
 import TimeAgo from 'react-timeago';
 import { createStarService } from '@/star';
 import styles from './style.less';
@@ -86,6 +86,21 @@ class IssueList extends React.Component {
       {
         title: 'Title',
         dataIndex: 'title',
+      },
+      {
+        title: 'Status',
+        dataIndex: 'status',
+      },
+      {
+        title: 'Updated Time',
+        render: (text, record) => {
+          const { updated } = record;
+          return (
+            <div>
+              <TimeAgo date={updated} />
+            </div>
+          );
+        },
       },
     ];
 
