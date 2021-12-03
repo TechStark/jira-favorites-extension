@@ -1,7 +1,7 @@
 const path = require('path');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
-const ExtensionReloader = require('webpack-extension-reloader');
+const ExtensionReloader = require('webpack-ext-reloader');
 const { getIfUtils, removeEmpty } = require('webpack-config-utils');
 
 const NODE_ENV = process.env.NODE_ENV || 'development';
@@ -88,9 +88,11 @@ module.exports = {
 
   plugins: removeEmpty([
     ifProduction(new CleanWebpackPlugin()),
-    new ExtensionReloader({
-      reloadPage: true,
-    }),
+    ifDevelopment(
+      new ExtensionReloader({
+        reloadPage: true,
+      })
+    ),
     new CopyWebpackPlugin({
       patterns: [
         { from: './src/manifest.json' },
