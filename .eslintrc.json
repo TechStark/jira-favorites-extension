@@ -1,6 +1,10 @@
 {
-  "parser": "babel-eslint",
-  "extends": ["airbnb", "prettier", "prettier/react", "plugin:prettier/recommended"],
+  "parser": "@babel/eslint-parser",
+  "extends": [
+    "eslint:recommended",
+    "plugin:react/recommended",
+    "plugin:prettier/recommended"
+  ],
   "env": {
     "browser": true,
     "webextensions": true
@@ -21,6 +25,13 @@
   "settings": {
     "import/resolver": {
       "babel-module": {}
+    },
+    "react": {
+      "createClass": "createReactClass", // Regex for Component Factory to use,
+      // default to "createReactClass"
+      "pragma": "React", // Pragma to use, default to "React"
+      "fragment": "Fragment", // Fragment to use (may be a property of <pragma>), default to "Fragment"
+      "version": "detect" // React version. "detect" automatically picks the version you have installed.
     }
   }
 }
