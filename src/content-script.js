@@ -24,7 +24,7 @@ function initStarButton() {
     </a>
     `).on('click', toggleStar);
     tools.append(starButton);
-    getStar(issueKey).then(updateState);
+    getStar(issueKey).then(updateButtonState);
   }
 }
 
@@ -37,7 +37,7 @@ $(document).on('keypress', (e) => {
   }
 });
 
-function updateState(favorite) {
+function updateButtonState(favorite) {
   isStarred = (favorite && favorite.key === getIssueKey()) || false;
   if (isStarred) {
     starButton.attr('title', 'Remove from favorites');
@@ -59,11 +59,19 @@ function updateState(favorite) {
 function toggleStar() {
   const issueKey = getIssueKey();
   if (isStarred) {
-    removeStar(issueKey).then(updateState);
+    removeStar(issueKey).then(updateButtonState);
   } else {
     const summary = $('#summary-val').text();
-    const favorite = { key: issueKey, title: summary, time: Date.now() };
-    addStar(issueKey, favorite).then(updateState);
+    const status = $('#status-val').text().trim();
+    const updated = $('#updated-val time').attr('datetime');
+    const favorite = {
+      key: issueKey,
+      title: summary,
+      time: Date.now(),
+      status,
+      updated,
+    };
+    addStar(issueKey, favorite).then(updateButtonState);
   }
 }
 

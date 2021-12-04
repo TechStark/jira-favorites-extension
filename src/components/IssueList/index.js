@@ -65,7 +65,7 @@ class IssueList extends React.Component {
           return (
             <div>
               <StarIcon starred={starred} onClick={() => handleStarIconClick(key, starred)} />
-              <TimeAgo date={record.time} />
+              <TimeAgo date={record.time} title={new Date(record.time).toLocaleString()} />
             </div>
           );
         },
@@ -108,7 +108,7 @@ class IssueList extends React.Component {
           const { updated } = record;
           return (
             <div>
-              <TimeAgo date={updated} />
+              <TimeAgo date={updated} title={new Date(updated).toLocaleString()} />
             </div>
           );
         },
