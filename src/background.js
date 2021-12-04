@@ -4,8 +4,8 @@ chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
   }
 });
 
-chrome.browserAction.onClicked.addListener(function (activeTab) {
-  chrome.tabs.create({ url: chrome.extension.getURL('starList.html') }, function (tab) {
+chrome.action.onClicked.addListener(function (activeTab) {
+  chrome.tabs.create({ url: chrome.runtime.getURL('starList.html') }, function (tab) {
     // Tab opened.
   });
 });
