@@ -29,11 +29,9 @@ function initStarButton() {
 }
 
 $(document).on('keypress', (e) => {
-  if (e.key === 'f') {
-    const tagName = $(e.target).prop('tagName');
-    if (['INPUT', 'TEXTAREA', 'SELECT'].indexOf(tagName) === -1) {
-      toggleStar();
-    }
+  // Alt + Shift + F to toggle star
+  if (e.altKey && e.shiftKey && e.code === 'KeyF') {
+    toggleStar();
   }
 });
 
