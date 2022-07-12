@@ -1,6 +1,6 @@
 {
   "name": "Jira Favorites",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "manifest_version": 2,
   "description": "Add Jira issues to favorites and sync among your devices.",
   "icons": {
