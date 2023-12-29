@@ -1,6 +1,6 @@
 import React from 'react';
 import { Button, Tooltip, Input } from 'antd';
-import { EditOutlined, SaveOutlined } from '@ant-design/icons';
+import { EditOutlined, SaveOutlined, CloseOutlined } from '@ant-design/icons';
 
 class JiraSiteUrl extends React.Component {
   constructor(props) {
@@ -43,15 +43,26 @@ class JiraSiteUrl extends React.Component {
             hidden={editMode}
           />
         </Tooltip>
+
         {editMode && (
-          <Tooltip title="Save">
-            <Button
-              type="text"
-              size="small"
-              icon={<SaveOutlined />}
-              onClick={() => this.changeJiraSiteUrl()}
-            />
-          </Tooltip>
+          <>
+            <Tooltip title="Save">
+              <Button
+                type="text"
+                size="small"
+                icon={<SaveOutlined />}
+                onClick={() => this.changeJiraSiteUrl()}
+              />
+            </Tooltip>
+            <Tooltip title="Cancel">
+              <Button
+                type="text"
+                size="small"
+                icon={<CloseOutlined />}
+                onClick={() => this.setState({ editMode: false })}
+              />
+            </Tooltip>
+          </>
         )}
       </div>
     );

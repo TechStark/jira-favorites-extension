@@ -6,6 +6,7 @@ import { SyncOutlined } from '@ant-design/icons';
 import IssueList from '@/components/IssueList';
 import JiraSiteUrl from '@/components/JiraSiteUrl';
 import { createStarService } from '@/star';
+import { readContent, writeContent } from '@/utils/storage';
 
 import 'antd/dist/antd.css';
 
@@ -20,20 +21,23 @@ class StarList extends React.Component {
   }
 
   componentDidMount() {
-    chrome.storage.sync.get(null, (items) => {
-      const sites = items.sites || [];
-      const siteIssues = {};
-      for (let i = 0; i < sites.length; i++) {
-        const siteURL = sites[i];
-        const issueKeyPrefix = `s${i}.`;
-        const issues = Object.keys(items)
-          .filter((key) => key.indexOf(issueKeyPrefix) === 0)
-          .map((key) => items[key]);
-        siteIssues[siteURL] = issues;
-      }
-      const sitesWithCards = sites.filter((url) => siteIssues[url].length > 0);
-      this.setState({ sites: sitesWithCards, siteIssues });
-    });
+    this.reloadData();
+  }
+
+  async reloadData() {
+    const items = await readContent(null);
+    const sites = items.sites || [];
+    const siteIssues = {};
+    for (let i = 0; i < sites.length; i++) {
+      const siteURL = sites[i];
+      const issueKeyPrefix = `s${i}.`;
+      const issues = Object.keys(items)
+        .filter((key) => key.indexOf(issueKeyPrefix) === 0)
+        .map((key) => items[key]);
+      siteIssues[siteURL] = issues;
+    }
+    const sitesWithCards = sites.filter((url) => siteIssues[url].length > 0);
+    this.setState({ sites: sitesWithCards, siteIssues });
   }
 
   updateIssues(siteURL, issues) {
@@ -78,6 +82,19 @@ class StarList extends React.Component {
       });
   }
 
+  async changeSiteUrl(siteUrl, newUrl) {
+    const items = await readContent(null);
+    const sites = items.sites || [];
+    const newSites = sites.map((url) => {
+      if (url === siteUrl) {
+        return newUrl;
+      }
+      return url;
+    });
+    await writeContent({ sites: newSites });
+    this.reloadData();
+  }
+
   render() {
     const { sites, siteIssues, isUpdating } = this.state;
 
@@ -88,7 +105,15 @@ class StarList extends React.Component {
         {sites.map((siteURL) => (
           <div key={siteURL}>
             <div style={{ display: 'flex', marginTop: '2em' }}>
-              <JiraSiteUrl siteURL={siteURL} onChange={(newUrl) => {}} />
+              <JiraSiteUrl
+                siteURL={siteURL}
+                onChange={(newUrl) => {
+                  this.changeSiteUrl(siteURL, newUrl);
+                }}
+                onRefreshIssues={() => {
+                  this.updateIssues(siteURL, siteIssues[siteURL]);
+                }}
+              />
               <Tooltip title="Update tickets from Jira">
                 <Button
                   shape="circle"
