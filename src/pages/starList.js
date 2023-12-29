@@ -7,6 +7,8 @@ import IssueList from '@/components/IssueList';
 import JiraSiteUrl from '@/components/JiraSiteUrl';
 import { createStarService } from '@/star';
 
+import 'antd/dist/antd.css';
+
 class StarList extends React.Component {
   constructor(props) {
     super(props);
