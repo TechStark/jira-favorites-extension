@@ -4,6 +4,7 @@ import { render } from 'react-dom';
 import { Button, Tooltip } from 'antd';
 import { SyncOutlined } from '@ant-design/icons';
 import IssueList from '@/components/IssueList';
+import JiraSiteUrl from '@/components/JiraSiteUrl';
 import { createStarService } from '@/star';
 
 class StarList extends React.Component {
@@ -85,8 +86,8 @@ class StarList extends React.Component {
         {sites.map((siteURL) => (
           <div key={siteURL}>
             <div style={{ display: 'flex', marginTop: '2em' }}>
-              <h3>{siteURL}</h3>
-              <Tooltip title="Update from Jira">
+              <JiraSiteUrl siteURL={siteURL} onChange={(newUrl) => {}} />
+              <Tooltip title="Update tickets from Jira">
                 <Button
                   shape="circle"
                   size="small"

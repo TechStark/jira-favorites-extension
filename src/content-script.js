@@ -1,5 +1,6 @@
 import $ from 'jquery';
 import { throttle } from 'lodash';
+import hotkeys from 'hotkeys-js';
 import { createStarService } from './star';
 
 const { getStar, addStar, removeStar } = createStarService(window.location.origin);
@@ -28,11 +29,8 @@ function initStarButton() {
   }
 }
 
-$(document).on('keypress', (e) => {
-  // Alt + Shift + F to toggle star
-  if (e.altKey && e.shiftKey && e.code === 'KeyF') {
-    toggleStar();
-  }
+hotkeys('alt+shift+f', function (event, handler) {
+  toggleStar();
 });
 
 function updateButtonState(favorite) {
