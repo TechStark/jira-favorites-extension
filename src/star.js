@@ -37,9 +37,16 @@ function getSiteKey(siteURL, needSave) {
     }
     if (needSave) {
       // save the new site
-      index = sites.length;
-      sites.push(siteURL);
-      return saveSites(sites).then(() => index);
+      const emptyIndex = sites.indexOf('');
+      if (emptyIndex >= 0) {
+        // reuse index of empty slot
+        sites[emptyIndex] = siteURL;
+        return saveSites(sites).then(() => emptyIndex);
+      } else {
+        index = sites.length;
+        sites.push(siteURL);
+        return saveSites(sites).then(() => index);
+      }
     }
     return -1;
   });
