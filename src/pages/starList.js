@@ -108,11 +108,9 @@ class StarList extends React.Component {
       );
       const newIssueValues = oldIssueKeys.map((key) => items[key]);
       const newIssueItems = R.zipObj(newIssueKeys, newIssueValues);
-      console.log(newIssueItems);
 
       // save new content
       await writeContent({ ...newIssueItems, sites: newSites });
-
       // delete old issues
       await removeContent(oldIssueKeys);
     } else {

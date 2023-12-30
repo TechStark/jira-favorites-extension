@@ -10,28 +10,45 @@ function getIssueKey() {
   return matches && matches[1];
 }
 
-const toolsQeury = '#opsbar-jira\\.issue\\.tools';
+const toolsQueryV1 = '#opsbar-jira\\.issue\\.tools'; // on prem version
+const toolsQueryV2 = '#jira-issue-header-actions > div > div'; // jira cloud version
 
+let jiraVersion = '';
 let isStarred = false;
 let starButton;
 
 function initStarButton() {
   const issueKey = getIssueKey();
-  const tools = $(toolsQeury);
-  if (issueKey && tools.length > 0) {
-    starButton = $(`
-    <a class="jira-star aui-button toolbar-trigger">
-      <span class="icon aui-icon aui-icon-small aui-iconfont-unstar" />
-    </a>
-    `).on('click', toggleStar);
+  if (!issueKey) {
+    return;
+  }
+
+  let tools;
+  if ((tools = $(toolsQueryV1)).length > 0) {
+    jiraVersion = 'V1';
+  } else if ((tools = $(toolsQueryV2)).length > 0) {
+    jiraVersion = 'V2';
+  }
+
+  if (!jiraVersion) {
+    // unsupported version
+    return;
+  }
+
+  if (tools.length > 0) {
+    starButton = createStarButton().on('click', toggleStar);
     tools.append(starButton);
     getStar(issueKey).then(updateButtonState);
   }
 }
 
-hotkeys('alt+shift+f', function (event, handler) {
-  toggleStar();
-});
+function createStarButton() {
+  return $(`
+      <a class="jira-star aui-button toolbar-trigger">
+        <span class="icon aui-icon aui-icon-small aui-iconfont-unstar" />
+      </a>
+      `);
+}
 
 function updateButtonState(favorite) {
   isStarred = (favorite && favorite.key === getIssueKey()) || false;
@@ -85,10 +102,14 @@ function init() {
   initStarButton();
   // after page content changed, ensure star button is still inserted
   monitorPageChange();
+  // register keyboard shortcut
+  hotkeys('alt+shift+f', function (event, handler) {
+    toggleStar();
+  });
 }
 
 function isJira() {
-  const meta = document.head.querySelector('meta[name="application-name"][content="JIRA"]');
+  const meta = document.querySelector('meta[name="application-name"][content="JIRA"]');
   return !!meta;
 }
 
