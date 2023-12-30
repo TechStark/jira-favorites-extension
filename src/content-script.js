@@ -69,22 +69,41 @@ function updateButtonState(favorite) {
   }
 }
 
-function toggleStar() {
+async function toggleStar() {
   const issueKey = getIssueKey();
   if (isStarred) {
     removeStar(issueKey).then(updateButtonState);
   } else {
-    const summary = $('#summary-val').text();
-    const status = $('#status-val').text().trim();
-    const updated = $('#updated-val time').attr('datetime');
+    const issueInfo = await getJiraIssueInfo();
     const favorite = {
+      ...issueInfo,
       key: issueKey,
-      title: summary,
       time: Date.now(),
-      status,
-      updated,
     };
     addStar(issueKey, favorite).then(updateButtonState);
+  }
+}
+
+async function getJiraIssueInfo() {
+  switch (jiraVersion) {
+    case 'V1': {
+      const title = $('#summary-val').text();
+      const status = $('#status-val').text().trim();
+      const updated = $('#updated-val time').attr('datetime');
+      return { title, status, updated };
+    }
+    case 'V2': {
+      const title = $('[data-testid="issue.views.issue-base.foundation.summary.heading"]').text();
+      const status = $('#issue\\.fields\\.status-view\\.status-button').text().trim();
+      // e.g. Updated December 15, 2023 at 10:11 AM
+      const updatedText = $('[data-testid="updated-date.ui.read.meta-date"]').text();
+      const dateTimeStr = updatedText.replace('Updated ', '').replace(' at ', ' ');
+      const dt = new Date(dateTimeStr);
+      const updated = isNaN(dt.getTime()) ? '' : dt.toISOString();
+      return { title, status, updated };
+    }
+    default:
+      console.log('Unknown JIRA version', jiraVersion);
   }
 }
 
