@@ -6,7 +6,7 @@ import { SyncOutlined } from '@ant-design/icons';
 import IssueList from '@/components/IssueList';
 import JiraSiteUrl from '@/components/JiraSiteUrl';
 import { createStarService } from '@/star';
-import { readContent, writeContent } from '@/utils/storage';
+import { readContent, writeContent, removeContent } from '@/utils/storage';
 
 import 'antd/dist/antd.css';
 
@@ -83,15 +83,43 @@ class StarList extends React.Component {
   }
 
   async changeSiteUrl(siteUrl, newUrl) {
+    if (siteUrl === newUrl) {
+      return;
+    }
+
     const items = await readContent(null);
     const sites = items.sites || [];
-    const newSites = sites.map((url) => {
-      if (url === siteUrl) {
-        return newUrl;
-      }
-      return url;
-    });
-    await writeContent({ sites: newSites });
+
+    const targetSiteIndex = sites.indexOf(siteUrl);
+    if (targetSiteIndex < 0) {
+      return;
+    }
+
+    const existingSiteIndex = sites.indexOf(newUrl);
+    if (existingSiteIndex >= 0) {
+      // set target site URL to ""
+      const newSites = R.assocPath([targetSiteIndex], '', sites);
+      // move issues in target site to the existing one
+      const oldIssueKeyPrefix = `s${targetSiteIndex}.`;
+      const newIssueKeyPrefix = `s${existingSiteIndex}.`;
+      const oldIssueKeys = Object.keys(items).filter((key) => key.startsWith(oldIssueKeyPrefix));
+      const newIssueKeys = oldIssueKeys.map((key) =>
+        key.replace(oldIssueKeyPrefix, newIssueKeyPrefix)
+      );
+      const newIssueValues = oldIssueKeys.map((key) => items[key]);
+      const newIssueItems = R.zipObj(newIssueKeys, newIssueValues);
+      console.log(newIssueItems);
+
+      // save new content
+      await writeContent({ ...newIssueItems, sites: newSites });
+
+      // delete old issues
+      await removeContent(oldIssueKeys);
+    } else {
+      // simply change site URL
+      await writeContent({ sites: R.assocPath([targetSiteIndex], newUrl, sites) });
+    }
+
     this.reloadData();
   }
 
