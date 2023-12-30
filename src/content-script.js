@@ -1,9 +1,9 @@
 import $ from 'jquery';
-import { throttle } from 'lodash';
+import throttle from 'lodash/throttle';
 import hotkeys from 'hotkeys-js';
 import { createStarService } from './star';
 
-const { getStar, addStar, removeStar } = createStarService(window.location.origin);
+const { getStar, addStar, removeStar, updateIssueInfo } = createStarService(window.location.origin);
 
 function getIssueKey() {
   const matches = window.location.href.match(/\/browse\/([\w-]+)\b/);
@@ -80,7 +80,10 @@ async function toggleStar() {
       key: issueKey,
       time: Date.now(),
     };
-    addStar(issueKey, favorite).then(updateButtonState);
+    addStar(issueKey, favorite)
+      .then(updateButtonState)
+      // get issue info via JIRA api
+      .then(() => updateIssueInfo(issueKey));
   }
 }
 

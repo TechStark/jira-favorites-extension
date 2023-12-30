@@ -7,6 +7,7 @@ import IssueList from '@/components/IssueList';
 import JiraSiteUrl from '@/components/JiraSiteUrl';
 import { createStarService } from '@/star';
 import { readContent, writeContent, removeContent } from '@/utils/storage';
+import * as api from '@/api/jira';
 
 import 'antd/dist/antd.css';
 
@@ -43,26 +44,10 @@ class StarList extends React.Component {
   updateIssues(siteURL, issues) {
     const starService = createStarService(siteURL);
     this.setState({ isUpdating: true });
-    const promises = issues.map((issue) => {
+    const promises = issues.map(async (issue) => {
       const { key } = issue;
-      return fetch(`${siteURL}/rest/api/2/issue/${key}`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      })
-        .then((response) => response.json())
-        .then((item) => {
-          const { fields } = item;
-          const { summary, status, updated } = fields;
-          const { name: statusName } = status;
-          const newIssue = {
-            title: summary,
-            status: statusName,
-            updated,
-          };
-          return R.mergeRight(issue, newIssue);
-        });
+      const newIssue = await api.getIssueInfo(key, siteURL);
+      return R.mergeRight(issue, newIssue);
     });
     Promise.all(promises)
       .then((issues) => {
