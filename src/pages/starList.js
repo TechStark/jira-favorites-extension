@@ -46,8 +46,14 @@ class StarList extends React.Component {
     this.setState({ isUpdating: true });
     const promises = issues.map(async (issue) => {
       const { key } = issue;
-      const newIssue = await api.getIssueInfo(key, siteURL);
-      return R.mergeRight(issue, newIssue);
+      try {
+        const newIssue = await api.getIssueInfo(key, siteURL);
+        return R.mergeRight(issue, newIssue);
+      } catch (error) {
+        console.error('failed to get issue info', error);
+        // existing issue
+        return issue;
+      }
     });
     Promise.all(promises)
       .then((issues) => {
