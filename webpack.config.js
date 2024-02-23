@@ -66,10 +66,10 @@ module.exports = {
         include: path.join(__dirname, 'src'),
         use: [
           {
-            loader: 'babel-loader',
-            options: {
-              cacheDirectory: './build/babel_cache',
-            },
+            loader: 'swc-loader',
+            // options: {
+            //   cacheDirectory: './build/babel_cache',
+            // },
           },
         ],
       },

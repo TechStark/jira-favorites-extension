@@ -1,41 +1,54 @@
 import $ from 'jquery';
-import { throttle } from 'lodash';
+import throttle from 'lodash/throttle';
+import hotkeys from 'hotkeys-js';
 import { createStarService } from './star';
 
-const { getStar, addStar, removeStar } = createStarService(window.location.origin);
+const { getStar, addStar, removeStar, updateIssueInfo } = createStarService(window.location.origin);
 
 function getIssueKey() {
   const matches = window.location.href.match(/\/browse\/([\w-]+)\b/);
   return matches && matches[1];
 }
 
-const toolsQeury = '#opsbar-jira\\.issue\\.tools';
+const toolsQueryV1 = '#opsbar-jira\\.issue\\.tools'; // on prem version
+const toolsQueryV2 = '#jira-issue-header-actions > div > div'; // jira cloud version
 
+let jiraVersion = '';
 let isStarred = false;
 let starButton;
 
 function initStarButton() {
   const issueKey = getIssueKey();
-  const tools = $(toolsQeury);
-  if (issueKey && tools.length > 0) {
-    starButton = $(`
-    <a class="jira-star aui-button toolbar-trigger">
-      <span class="icon aui-icon aui-icon-small aui-iconfont-unstar" />
-    </a>
-    `).on('click', toggleStar);
+  if (!issueKey) {
+    return;
+  }
+
+  let tools;
+  if ((tools = $(toolsQueryV1)).length > 0) {
+    jiraVersion = 'V1';
+  } else if ((tools = $(toolsQueryV2)).length > 0) {
+    jiraVersion = 'V2';
+  }
+
+  if (!jiraVersion) {
+    // unsupported version
+    return;
+  }
+
+  if (tools.length > 0) {
+    starButton = createStarButton().on('click', toggleStar);
     tools.append(starButton);
     getStar(issueKey).then(updateButtonState);
   }
 }
 
-$(document).on('keypress', (e) => {
-  if (e.key === 'f') {
-    const tagName = $(e.target).prop('tagName');
-    if (['INPUT', 'TEXTAREA', 'SELECT'].indexOf(tagName) === -1) {
-      toggleStar();
-    }
-  }
-});
+function createStarButton() {
+  return $(`
+      <a class="jira-star aui-button toolbar-trigger">
+        <span class="icon aui-icon aui-icon-small aui-iconfont-unstar" />
+      </a>
+      `);
+}
 
 function updateButtonState(favorite) {
   isStarred = (favorite && favorite.key === getIssueKey()) || false;
@@ -56,22 +69,44 @@ function updateButtonState(favorite) {
   }
 }
 
-function toggleStar() {
+async function toggleStar() {
   const issueKey = getIssueKey();
   if (isStarred) {
     removeStar(issueKey).then(updateButtonState);
   } else {
-    const summary = $('#summary-val').text();
-    const status = $('#status-val').text().trim();
-    const updated = $('#updated-val time').attr('datetime');
+    const issueInfo = await getJiraIssueInfo();
     const favorite = {
+      ...issueInfo,
       key: issueKey,
-      title: summary,
       time: Date.now(),
-      status,
-      updated,
     };
-    addStar(issueKey, favorite).then(updateButtonState);
+    addStar(issueKey, favorite)
+      .then(updateButtonState)
+      // get issue info via JIRA api
+      .then(() => updateIssueInfo(issueKey));
+  }
+}
+
+async function getJiraIssueInfo() {
+  switch (jiraVersion) {
+    case 'V1': {
+      const title = $('#summary-val').text();
+      const status = $('#status-val').text().trim();
+      const updated = $('#updated-val time').attr('datetime');
+      return { title, status, updated };
+    }
+    case 'V2': {
+      const title = $('[data-testid="issue.views.issue-base.foundation.summary.heading"]').text();
+      const status = $('#issue\\.fields\\.status-view\\.status-button').text().trim();
+      // e.g. Updated December 15, 2023 at 10:11 AM
+      const updatedText = $('[data-testid="updated-date.ui.read.meta-date"]').text();
+      const dateTimeStr = updatedText.replace('Updated ', '').replace(' at ', ' ');
+      const dt = new Date(dateTimeStr);
+      const updated = isNaN(dt.getTime()) ? '' : dt.toISOString();
+      return { title, status, updated };
+    }
+    default:
+      console.log('Unknown JIRA version', jiraVersion);
   }
 }
 
@@ -89,10 +124,14 @@ function init() {
   initStarButton();
   // after page content changed, ensure star button is still inserted
   monitorPageChange();
+  // register keyboard shortcut
+  hotkeys('alt+shift+f', function (event, handler) {
+    toggleStar();
+  });
 }
 
 function isJira() {
-  const meta = document.head.querySelector('meta[name="application-name"][content="JIRA"]');
+  const meta = document.querySelector('meta[name="application-name"][content="JIRA"]');
   return !!meta;
 }
 

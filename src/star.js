@@ -1,4 +1,5 @@
 import { readContent, writeContent, removeContent } from '@/utils/storage';
+import * as api from '@/api/jira';
 
 /**
  * 
@@ -14,7 +15,7 @@ import { readContent, writeContent, removeContent } from '@/utils/storage';
         "time": 1583910495991,
         "title": "As a user, I want density or molarity to be populated in the stoich grid from ChemACX"
     },
-    "sites": ["https://jira-ext.perkinelmer.com", "http://jira.perkinelmer.net:8080"]
+    "sites": ["https://jira-ext.example.com", "http://jira.example2.cloud"]
 }
  * 
  */
@@ -37,9 +38,16 @@ function getSiteKey(siteURL, needSave) {
     }
     if (needSave) {
       // save the new site
-      index = sites.length;
-      sites.push(siteURL);
-      return saveSites(sites).then(() => index);
+      const emptyIndex = sites.indexOf('');
+      if (emptyIndex >= 0) {
+        // reuse index of empty slot
+        sites[emptyIndex] = siteURL;
+        return saveSites(sites).then(() => emptyIndex);
+      } else {
+        index = sites.length;
+        sites.push(siteURL);
+        return saveSites(sites).then(() => index);
+      }
     }
     return -1;
   });
@@ -72,10 +80,21 @@ export function createStarService(siteURL) {
     return issues;
   };
 
+  const updateIssueInfo = async (issueKey) => {
+    const newInfo = await api.getIssueInfo(issueKey, siteURL);
+    const favorite = await getStar(issueKey);
+    if (!newInfo || !favorite) {
+      return;
+    }
+    const newFavorite = Object.assign({}, favorite, newInfo);
+    await addStar(issueKey, newFavorite);
+  };
+
   return {
     getStar,
     removeStar,
     addStar,
     bulkSave,
+    updateIssueInfo,
   };
 }
