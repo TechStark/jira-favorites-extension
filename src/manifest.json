@@ -1,31 +1,36 @@
 {
   "name": "Jira Favorites",
   "version": "0.0.8",
-  "manifest_version": 2,
+  "manifest_version": 3,
   "description": "Add Jira issues to favorites and sync among your devices.",
   "icons": {
     "128": "icons/icon-128.png",
     "48": "icons/icon-48.png",
     "16": "icons/icon-16.png"
   },
-  "browser_action": {
+  "action": {
     "default_icon": {
       "16": "icons/icon-16.png",
       "32": "icons/icon-32.png"
     }
   },
   "background": {
-    "scripts": ["background.bundle.js"],
-    "persistent": false
+    "service_worker": "background.bundle.js"
   },
   "content_scripts": [
     {
-      "matches": ["*://*/browse/*"],
+      "matches": [
+        "*://*/browse/*"
+      ],
       "match_about_blank": true,
       "all_frames": true,
       "run_at": "document_idle",
-      "js": ["content-script.bundle.js"]
+      "js": [
+        "content-script.bundle.js"
+      ]
     }
   ],
-  "permissions": ["storage"]
+  "permissions": [
+    "storage"
+  ]
 }

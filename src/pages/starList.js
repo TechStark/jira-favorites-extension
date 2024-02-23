@@ -9,7 +9,7 @@ import { createStarService } from '@/star';
 import { readContent, writeContent, removeContent } from '@/utils/storage';
 import * as api from '@/api/jira';
 
-import 'antd/dist/antd.css';
+import 'antd/dist/reset.css';
 
 class StarList extends React.Component {
   constructor(props) {
