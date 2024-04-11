@@ -13,6 +13,7 @@ function getIssueKey() {
 const toolsQueryV1 = '#opsbar-jira\\.issue\\.tools'; // on prem version
 const toolsQueryV2 = '#jira-issue-header-actions > div > div'; // jira cloud version
 
+let url = window.location.href;
 let jiraVersion = '';
 let isStarred = false;
 let starButton;
@@ -36,13 +37,20 @@ function initStarButton() {
   }
 
   if (tools.length > 0) {
-    starButton = createStarButton().on('click', toggleStar);
-    tools.append(starButton);
+    if (starButton && starButton[0].isConnected) {
+      // just update state
+    } else {
+      starButton = createStarButton().on('click', toggleStar);
+      tools.append(starButton);
+    }
     getStar(issueKey).then(updateButtonState);
   }
 }
 
 function createStarButton() {
+  if (starButton) {
+    return starButton;
+  }
   return $(`
       <a class="jira-star aui-button toolbar-trigger">
         <span class="icon aui-icon aui-icon-small aui-iconfont-unstar" />
@@ -112,7 +120,11 @@ async function getJiraIssueInfo() {
 
 function monitorPageChange() {
   const handler = throttle(() => {
-    if (starButton == null || !starButton[0].isConnected) {
+    const newUrl = window.location.href;
+    if (newUrl !== url) {
+      url = newUrl;
+      initStarButton();
+    } else if (starButton == null || !starButton[0].isConnected) {
       initStarButton();
     }
   }, 200);
@@ -136,7 +148,7 @@ function isJira() {
 }
 
 // ensure this extension can run
-if (isJira() && getIssueKey()) {
+if (isJira()) {
   init();
 } else {
   // gray out extension icon

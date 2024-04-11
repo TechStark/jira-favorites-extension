@@ -1,6 +1,6 @@
 import React from 'react';
 import * as R from 'ramda';
-import { render } from 'react-dom';
+import { createRoot } from 'react-dom/client';
 import { Button, Tooltip } from 'antd';
 import { SyncOutlined } from '@ant-design/icons';
 import IssueList from '@/components/IssueList';
@@ -150,4 +150,5 @@ class StarList extends React.Component {
   }
 }
 
-render(<StarList />, document.getElementById('root'));
+const root = createRoot(document.getElementById('root'));
+root.render(<StarList />);
