@@ -75,7 +75,7 @@ class IssueList extends React.Component {
       {
         title: 'Issue Key',
         align: 'left',
-        width: 160,
+        width: 150,
         render: (text, record) => {
           const { key } = record;
           return (
@@ -92,6 +92,7 @@ class IssueList extends React.Component {
       {
         title: 'Status',
         dataIndex: 'status',
+        width: 150,
         sorter: (a, b) => {
           if (a.status < b.status) {
             return -1;
@@ -104,6 +105,7 @@ class IssueList extends React.Component {
       },
       {
         title: 'Updated Time',
+        width: 150,
         render: (text, record) => {
           const { updated } = record;
           return (
