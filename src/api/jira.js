@@ -15,12 +15,12 @@ export function getIssueInfo(issueKey, siteURL = '') {
         status: statusName,
         updated,
         creator: {
-          displayName: creator.displayName,
-          avatarUrl: creator.avatarUrls['48x48'],
+          displayName: creator?.displayName,
+          avatarUrl: creator?.avatarUrls['48x48'],
         },
         assignee: {
-          displayName: assignee.displayName,
-          avatarUrl: assignee.avatarUrls['48x48'],
+          displayName: assignee?.displayName,
+          avatarUrl: assignee?.avatarUrls['48x48'],
         },
       };
       return info;

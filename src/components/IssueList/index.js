@@ -18,7 +18,7 @@ const StarIcon = ({ starred, onClick }) => {
 };
 
 const User = ({ user }) => {
-  const { displayName, avatarUrl } = user;
+  const { displayName, avatarUrl } = user || {};
   return (
     <span>
       <img className={styles.userAvatar} src={avatarUrl} alt={displayName} />
