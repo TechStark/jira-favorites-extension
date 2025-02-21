@@ -137,7 +137,11 @@ class IssueList extends React.Component {
         render: (value) => {
           return <User user={value} />;
         },
-        sorter: (a, b) => a.displayName - b.displayName,
+        sorter: (a, b) => {
+          const name1 = a.assignee?.displayName || '';
+          const name2 = b.assignee?.displayName || '';
+          return name1.localeCompare(name2);
+        },
       },
       {
         title: 'Reporter',
@@ -146,7 +150,11 @@ class IssueList extends React.Component {
         render: (value) => {
           return <User user={value} />;
         },
-        sorter: (a, b) => a.displayName - b.displayName,
+        sorter: (a, b) => {
+          const name1 = a.creator?.displayName || '';
+          const name2 = b.creator?.displayName || '';
+          return name1.localeCompare(name2);
+        },
       },
     ];
 
