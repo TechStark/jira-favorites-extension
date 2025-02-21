@@ -17,6 +17,16 @@ const StarIcon = ({ starred, onClick }) => {
   );
 };
 
+const User = ({ user }) => {
+  const { displayName, avatarUrl } = user;
+  return (
+    <span>
+      <img className={styles.userAvatar} src={avatarUrl} alt={displayName} />
+      <span style={{ marginLeft: '4px' }}>{displayName}</span>
+    </span>
+  );
+};
+
 class IssueList extends React.Component {
   constructor(props) {
     super(props);
@@ -119,6 +129,24 @@ class IssueList extends React.Component {
           return getTime(a.updated) - getTime(b.updated);
         },
         sortDirections: ['descend', 'ascend'],
+      },
+      {
+        title: 'Assignee',
+        dataIndex: 'assignee',
+        width: 150,
+        render: (value) => {
+          return <User user={value} />;
+        },
+        sorter: (a, b) => a.displayName - b.displayName,
+      },
+      {
+        title: 'Reporter',
+        dataIndex: 'creator',
+        width: 150,
+        render: (value) => {
+          return <User user={value} />;
+        },
+        sorter: (a, b) => a.displayName - b.displayName,
       },
     ];
 
