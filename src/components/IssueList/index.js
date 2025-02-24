@@ -133,7 +133,7 @@ class IssueList extends React.Component {
       {
         title: 'Assignee',
         dataIndex: 'assignee',
-        width: 150,
+        width: 200,
         render: (value) => {
           return <User user={value} />;
         },
@@ -146,7 +146,7 @@ class IssueList extends React.Component {
       {
         title: 'Reporter',
         dataIndex: 'creator',
-        width: 150,
+        width: 200,
         render: (value) => {
           return <User user={value} />;
         },
