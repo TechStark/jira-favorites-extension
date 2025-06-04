@@ -1,9 +1,11 @@
 import React from 'react';
-import { Table } from 'antd';
-import { StarOutlined, StarFilled } from '@ant-design/icons';
+import { Table, Input } from 'antd';
+import { StarOutlined, StarFilled, EditOutlined } from '@ant-design/icons';
 import TimeAgo from 'react-timeago';
 import { createStarService } from '@/star';
 import styles from './style.less';
+
+const { TextArea } = Input;
 
 const StarIcon = ({ starred, onClick }) => {
   return (
@@ -34,12 +36,37 @@ class IssueList extends React.Component {
     this.starService = createStarService(site);
     this.state = {
       unstarredKeys: [],
+      editingNoteKey: null,
+      lastUpdatedNote: null,
     };
   }
 
+  handleNoteEdit = (key) => {
+    this.setState({ editingNoteKey: key });
+  };
+
+  handleNoteSave = async (key, value) => {
+    const { issues } = this.props;
+    const issue = issues.find(issue => issue.key === key);
+    
+    if (issue) {
+      // Update the note property in the issue object to reflect changes immediately
+      issue.note = value;
+      
+      const updatedIssue = { ...issue, note: value };
+      await this.starService.addStar(key, updatedIssue);
+      
+      // Update state to trigger re-render
+      this.setState({ 
+        editingNoteKey: null,
+        lastUpdatedNote: { key, value, timestamp: Date.now() } 
+      });
+    }
+  };
+
   render() {
     const { site, issues } = this.props;
-    const { unstarredKeys } = this.state;
+    const { unstarredKeys, editingNoteKey } = this.state;
     const { addStar, removeStar } = this.starService;
 
     const isStarred = (key) => {
@@ -156,11 +183,62 @@ class IssueList extends React.Component {
           return name1.localeCompare(name2);
         },
       },
+      {
+        title: 'Note',
+        dataIndex: 'note',
+        width: 300,
+        render: (value, record) => {
+          const { key } = record;
+          const isEditing = editingNoteKey === key;
+          
+          if (isEditing) {
+            return (
+              <TextArea
+                autoFocus
+                defaultValue={value || ''}
+                autoSize={{ minRows: 1, maxRows: 5 }}
+                onBlur={(e) => this.handleNoteSave(key, e.target.value)}
+                onKeyDown={(e) => {
+                  // Save and exit edit mode when Ctrl+Enter or Command+Enter is pressed
+                  if ((e.ctrlKey || e.metaKey) && e.keyCode === 13) {
+                    this.handleNoteSave(key, e.target.value);
+                  }
+                }}
+              />
+            );
+          }
+          
+          return (
+            <div className={styles.noteCell}>
+              <div style={{ paddingRight: '25px' }}>{value || ''}</div>
+              <EditOutlined 
+                className={styles.noteEditIcon} 
+                style={{ opacity: 0, transition: 'opacity 0.3s' }} 
+                onClick={() => this.handleNoteEdit(key)} 
+              />
+            </div>
+          );
+        },
+      },
     ];
 
     return (
       <div>
-        <Table size="small" columns={columns} dataSource={issues} pagination={false} />
+        <Table 
+          size="small" 
+          columns={columns} 
+          dataSource={issues} 
+          pagination={false}
+          rowClassName={() => styles.tableRow}
+          onRow={(record) => ({
+            onMouseEnter: () => {
+              // We could add additional row hover handling here if needed
+            },
+            onMouseLeave: () => {
+              // We could add additional row hover handling here if needed
+            },
+          })}
+        />
       </div>
     );
   }

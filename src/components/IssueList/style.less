@@ -20,3 +20,27 @@
   max-width: 24px;
   max-height: 24px;
 }
+
+.noteCell {
+  display: flex;
+  align-items: flex-start;
+  min-height: 28px;
+  cursor: text;
+  white-space: pre-wrap;
+  word-break: break-word;
+  max-height: 120px;
+  overflow-y: auto;
+  position: relative;
+  width: 100%;
+}
+
+.tableRow:hover .noteEditIcon {
+  opacity: 1 !important;
+}
+
+.noteEditIcon {
+  position: absolute;
+  right: 8px;
+  top: 4px;
+  cursor: pointer;
+}
