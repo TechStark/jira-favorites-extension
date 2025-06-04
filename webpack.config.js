@@ -19,6 +19,7 @@ const getLessLoaders = (useModules) => {
         ? {
             modules: {
               localIdentName: '[name]__[local]--[hash:base64:5]',
+              exportLocalsConvention: 'camel-case',
             },
           }
         : {},
@@ -103,4 +104,12 @@ module.exports = {
   ]),
 
   devtool: ifDevelopment('inline-source-map'),
+  
+  // Add resolve configuration to handle path aliases and file extensions
+  resolve: {
+    alias: {
+      '@': path.resolve(__dirname, 'src'),
+    },
+    extensions: ['.js', '.jsx', '.json', '.less', '.css']
+  },
 };

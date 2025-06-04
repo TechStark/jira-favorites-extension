@@ -3,7 +3,7 @@ import { Table, Input } from 'antd';
 import { StarOutlined, StarFilled, EditOutlined } from '@ant-design/icons';
 import TimeAgo from 'react-timeago';
 import { createStarService } from '@/star';
-import styles from './style.less';
+import * as styles from './style.less';
 
 const { TextArea } = Input;
 
